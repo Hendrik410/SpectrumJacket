@@ -21,6 +21,8 @@ protected:
 
 	void setRST(uint8_t val);
 	void setSTROBE(uint8_t val);
+
+	uint16_t get(uint16_t* buffer, float normFreq); // normFreq: [0, 1]
 public:
 	AudioFilter();
 	~AudioFilter();
@@ -30,6 +32,9 @@ public:
 
 	uint16_t leftBuffer[7];
 	uint16_t rightBuffer[7];
+
+	uint16_t getLeft(float normFreq); // normFreq: [0, 1]
+	uint16_t getRight(float normFreq); // normFreq: [0, 1]
 
 	static AudioFilter* lastInstance;
 };
