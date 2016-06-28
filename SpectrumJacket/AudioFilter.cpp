@@ -79,6 +79,25 @@ void AudioFilter::readValues() {
 	}
 }
 
+uint16_t AudioFilter::get(uint16_t* buffer, float normFreq) {
+	int16_t freq = (int16_t)(normFreq * 6);
+	float frac = (normFreq * 6) - freq;
+
+	uint16_t a = buffer[freq];
+	if (freq >= 6) 
+		return a;
+
+	uint16_t b = buffer[freq + 1];
+	return a + (b - a) * frac; // linear interpolation
+}
+
+uint16_t AudioFilter::getLeft(float normFreq) {
+	return get(leftBuffer, normFreq);
+}
+
+uint16_t AudioFilter::getRight(float normFreq) {
+	return get(rightBuffer, normFreq);
+}
 
 void AudioFilter::setRST(uint8_t val) {
 	GPIO_WriteBit(GPIOB, GPIO_Pin_8, static_cast<BitAction>(val));

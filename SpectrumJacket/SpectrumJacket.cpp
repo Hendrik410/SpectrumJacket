@@ -11,6 +11,10 @@
 
 //uint8_t buffer[22 * 24];
 
+#define STRIPES 25
+#define LEDS_PER_STRIPE 22
+#define NORM_AMP(x) ((x * LEDS_PER_STRIPE) / 4096)
+
 int main() {
 	Timing::init();
 
@@ -18,7 +22,7 @@ int main() {
 	config.doubleBuffered = false;
 	config.dmaBufferCopy = false;
 	config.enableTimingDebugging = false;
-	config.ledsPerStrip = 22 * 25;
+	config.ledsPerStrip = STRIPES * LEDS_PER_STRIPE;
 	config.outputPort = GPIOA;
 	
 	WS2812* ws2812 = new WS2812(&config);
@@ -43,19 +47,33 @@ int main() {
 
 
 		ws2812->clearAll();
-		for(uint8_t freg = 0; freg < 11; freg++) {
-			uint8_t leftAmplitude = (audio->leftBuffer[freg / 2] * 22) / 4096;
-			uint8_t rightAmplitude = (audio->rightBuffer[freg / 2] * 22) / 4096;
 
-			for (uint16_t height = 0; height < leftAmplitude; height++) {
-				color.lightness = 25; // (height / 22.0f) * 32 + 32;
-				display->setPixel(freg, height, color);
+#define COLOR_LIGHT(x) ((1 - (x / (float)LEDS_PER_STRIPE)) * 32 + 32)
+
+		for(uint8_t freg = 0; freg <= STRIPES / 2; freg++) {
+			float normFreq = (float)freq / (STRIPES / 2);
+
+			uint8_t left = NORM_AMP(audio->getLeft(normFreq));
+			uint8_t right = NORM_AMP(audio->getRight(normFreq));
+
+			for (uint16_t i = 0; i < left; i++) {
+				color.lightness = COLOR_LIGHT(i);
+				display->setPixel(freg, i, color);
 			}
-			for (uint16_t height = 0; height < rightAmplitude; height++) {
-				color.lightness = 25; // (height / 22.0f) * 32 + 32;
-				display->setPixel(24 - freg, height, color);
+			for (uint16_t i = 0; i < right; i++) {
+				color.lightness = COLOR_LIGHT(i);
+				display->setPixel(STRIPES - 1 - freg, i, color);
 			}
 		}
+		if (STRIPES % 2 != 0) {
+			uint8_t amplitude = (NORM_AMP(audio->getLeft(1)) + NORM_AMP(audio->getRight(0))) / 2;
+
+			for (uint16_t i = 0; i < amplitude; i++) {
+				color.lightness = COLOR_LIGHT(i);
+				display->setPixel(STRIPES / 2 + 1, i, color);
+			}
+		}
+
 		ws2812->flush();
 
 		Timing::delay(5);
