@@ -243,3 +243,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/CodeDB/SpectrumJacket-Debug-Win32

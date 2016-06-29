@@ -50,7 +50,7 @@ int main() {
 
 #define COLOR_LIGHT(x) ((1 - (x / (float)LEDS_PER_STRIPE)) * 32 + 32)
 
-		for(uint8_t freg = 0; freg <= STRIPES / 2; freg++) {
+		for(uint8_t freq = 0; freq <= STRIPES / 2; freq++) {
 			float normFreq = (float)freq / (STRIPES / 2);
 
 			uint8_t left = NORM_AMP(audio->getLeft(normFreq));
@@ -58,11 +58,11 @@ int main() {
 
 			for (uint16_t i = 0; i < left; i++) {
 				color.lightness = COLOR_LIGHT(i);
-				display->setPixel(freg, i, color);
+				display->setPixel(freq, i, color);
 			}
 			for (uint16_t i = 0; i < right; i++) {
 				color.lightness = COLOR_LIGHT(i);
-				display->setPixel(STRIPES - 1 - freg, i, color);
+				display->setPixel(STRIPES - 1 - freq, i, color);
 			}
 		}
 		if (STRIPES % 2 != 0) {
